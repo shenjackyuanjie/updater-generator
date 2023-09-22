@@ -10,3 +10,4 @@ description = "A tool to generate updater for your application"
 
 [dependencies]
 gix-diff = "0.35.0"
+pyo3 = "0.19.2"
