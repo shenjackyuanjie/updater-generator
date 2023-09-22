@@ -10,5 +10,13 @@ description = "A tool to generate updater for your application"
 
 [dependencies]
 gix-diff = "0.35.0"
+gix-hash = "0.13.0"
 gix-odb = "0.52.0"
-pyo3 = "0.19.2"
+gix-ref = "0.36.0"
+gix-traverse = "0.32.0"
+
+#pyo3 = "0.19.2"
+
+[dependencies.gix-object]
+version = "0.36.0"
+features = ["verbose-object-parsing-errors"]
