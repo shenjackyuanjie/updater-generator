@@ -1,0 +1,12 @@
+[package]
+name = "updater-generator"
+version = "0.1.0"
+edition = "2021"
+authors = ["shenjackyuanjie <3695888@qq.com>"]
+description = "A tool to generate updater for your application"
+#links = "https://github.com/shenjackyuanjie/updater-generator"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gix-diff = "0.35.0"
