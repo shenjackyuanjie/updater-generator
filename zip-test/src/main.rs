@@ -1,17 +1,31 @@
+use base16384::Base16384Utf8;
+use blake3::Hasher;
 use std::fs;
 use std::io::{Seek, Write};
-use blake3::Hasher;
-use base16384::Base16384Utf8;
 
 pub struct FileMetaData {
+    /// 文件数据
     pub file: Vec<u8>,
+    /// 文件大小
     pub file_size: u64,
+    /// 文件 blake3
     pub file_blake3: String,
 }
 
 impl FileMetaData {
     pub fn as_string(&self) -> String {
-        format!("|{:?}|file:{}|{}|by-shenjack", self.file.as_slice(), self.file_size, self.file_blake3)
+        // format!(
+        //     "\n|{}\n|file:{}\n|{}\n|by-shenjack",
+        //     self.file,
+        //     self.file_size,
+        //     self.file_blake3
+        // )
+        // 将 file 以 Base16384 形式写入到文件中
+        let file_data = Base16384Utf8::encode(&self.file);
+        format!(
+            "\n|{}\n|file:{}\n|{}\n|by-shenjack",
+            file_data, self.file_size, self.file_blake3
+        )
     }
 
     pub fn new(file: Vec<u8>) -> Self {
@@ -21,7 +35,7 @@ impl FileMetaData {
         file_blake3.update(&file);
         let mut blake_data = file_blake3.finalize_xof();
 
-        let mut buff = [0; 512];
+        let mut buff = [0; 256];
         blake_data.fill(&mut buff);
 
         let blake3_str = Base16384Utf8::encode(&buff);
@@ -35,11 +49,11 @@ impl FileMetaData {
     /// 从给定数据中解析出 文件+文件大小+文件blake3
     pub fn from_data(data: &[u8]) -> Option<Self> {
         let data = String::from_utf8_lossy(data);
-        if !data.ends_with("|by-shenjack") {
+        if !data.ends_with("\n|by-shenjack") {
             return None;
         }
         let data = data.trim_end_matches("|by-shenjack");
-        let data: Vec<&str> = data.split('|').collect();
+        let data: Vec<&str> = data.split("\n|").collect();
         // xxxxxxxx|xxxxxxxxx(data)|file:xxxxxx|xxxxxx  (|by-shenjack)
         if data.len() < 4 {
             return None;
@@ -74,16 +88,24 @@ fn main() {
     println!("exe size: {}", exe.metadata().unwrap().len());
 
     // 将修改完的文件写入到一个新的文件中
-    let exe_path = exe_path.with_file_name(format!("{}-new.exe", exe_path.file_name().unwrap().to_str().unwrap()));
+    let exe_path = exe_path.with_file_name(format!(
+        "{}-new.exe",
+        exe_path.file_name().unwrap().to_str().unwrap()
+    ));
 
     let mut new_exe = fs::File::create(exe_path).unwrap();
-    exe.seek(std::io::SeekFrom::Start(0)).unwrap();
     std::io::copy(&mut exe, &mut new_exe).unwrap();
 
-    new_exe.write_all(&[1; 100]).unwrap();
+    // 将文件指针移动到文件末尾
+    new_exe.seek(std::io::SeekFrom::End(0)).unwrap();
+
+    let data = "Hello, World!".to_string();
+    let file_meta_data = FileMetaData::new(data.as_bytes().to_vec());
+
+    new_exe
+        .write_all(file_meta_data.as_string().as_bytes())
+        .unwrap();
 
     new_exe.flush().unwrap();
     println!("new exe size: {}", new_exe.metadata().unwrap().len());
 }
-
-
