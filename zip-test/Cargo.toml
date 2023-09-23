@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 base16384 = "0.1.0"
 blake3 = "1.5.0"
+zip = "0.6.6"
