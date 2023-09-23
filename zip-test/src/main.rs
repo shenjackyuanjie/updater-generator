@@ -72,6 +72,16 @@ impl FileMetaData {
         let file = data[0][data[0].len() - file_size as usize..]
             .as_bytes()
             .to_vec();
+        let mut verify_blake3 = Hasher::new().update(&file).finalize_xof();
+        let mut buff = [0; 256];
+        verify_blake3.fill(&mut buff);
+        let verify_blake3 = Base16384Utf8::encode(&buff);
+        if verify_blake3 != file_blake3 {
+            println!("verify blake3 failed");
+            println!("verify: {}\nfile: {}", verify_blake3, file_blake3);
+            return None;
+        }
+
         Some(Self {
             file,
             file_size,
