@@ -36,7 +36,7 @@ impl FileMetaData {
         let mut data = Vec::with_capacity(self.file.len() + 128);
         data.extend_from_slice(self.file.as_slice());
         let str_data = format!(
-            "\n|len:{}\n|{}\n|by-shenjack",
+            "\n|len:{}\n|black3-base16384:{}\n|by-shenjack",
             self.file_size, self.file_blake3
         );
         data.extend_from_slice(str_data.as_bytes());
@@ -59,7 +59,7 @@ impl FileMetaData {
         data.reverse();
         // PE/ELFxxxxxxxxx(raw binary data)
         // |len:xxxxxx
-        // |xxxxxflake3xxxx  (|by-shenjack)
+        // |black3-base16384:xxx  (|by-shenjack)
 
         println!("data: {:?} len: {}", data, data.len());
         if data.len() != 3 {
@@ -67,7 +67,7 @@ impl FileMetaData {
             return None;
         }
         let file_size = data[1].trim_start_matches("len:").parse::<u64>().unwrap();
-        let file_blake3 = data[2].to_string();
+        let file_blake3 = data[2].trim_start_matches("black3-base16384:").to_string();
         // 从末尾取 file_size 长度的数据
         let file = data[0][data[0].len() - file_size as usize..]
             .as_bytes()
@@ -77,7 +77,10 @@ impl FileMetaData {
         verify_blake3.fill(&mut buff);
         let verify_blake3 = Base16384Utf8::encode(&buff);
         if verify_blake3 != file_blake3 {
-            println!("verify blake3 failed\nverify: {}\nfile: {}", verify_blake3, file_blake3);
+            println!(
+                "verify blake3 failed\nverify: {}\nfile: {}",
+                verify_blake3, file_blake3
+            );
             return None;
         }
 
