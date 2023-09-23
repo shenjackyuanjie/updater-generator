@@ -77,8 +77,7 @@ impl FileMetaData {
         verify_blake3.fill(&mut buff);
         let verify_blake3 = Base16384Utf8::encode(&buff);
         if verify_blake3 != file_blake3 {
-            println!("verify blake3 failed");
-            println!("verify: {}\nfile: {}", verify_blake3, file_blake3);
+            println!("verify blake3 failed\nverify: {}\nfile: {}", verify_blake3, file_blake3);
             return None;
         }
 
