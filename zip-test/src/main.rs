@@ -40,7 +40,7 @@ impl FileMetaData {
         }
         let data = data.trim_end_matches("|by-shenjack");
         let data: Vec<&str> = data.split('|').collect();
-        // |xxxxxxxx|xxxxxxxxx(data)|file:xxxxxx|xxxxxx
+        // xxxxxxxx|xxxxxxxxx(data)|file:xxxxxx|xxxxxx  (|by-shenjack)
         if data.len() < 4 {
             return None;
         }
@@ -52,6 +52,16 @@ impl FileMetaData {
             file_size,
             file_blake3,
         })
+    }
+
+    /// 向数据中添加文件数据
+    pub fn add_data(&self, data: &[u8]) -> Vec<u8> {
+        let file_data = self.as_string();
+        let file_data = file_data.as_bytes();
+        let mut new_data = Vec::with_capacity(data.len() + file_data.len());
+        new_data.extend_from_slice(data);
+        new_data.extend_from_slice(file_data);
+        new_data
     }
 }
 
