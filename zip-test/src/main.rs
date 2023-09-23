@@ -11,7 +11,7 @@ pub struct FileMetaData {
 
 impl FileMetaData {
     pub fn as_string(&self) -> String {
-        format!("|file:{}|{}|by-shenjack", self.file_size, self.file_blake3)
+        format!("|{:?}|file:{}|{}|by-shenjack", self.file.as_slice(), self.file_size, self.file_blake3)
     }
 
     pub fn new(file: Vec<u8>) -> Self {
@@ -40,14 +40,15 @@ impl FileMetaData {
         }
         let data = data.trim_end_matches("|by-shenjack");
         let data: Vec<&str> = data.split('|').collect();
-        // xxxxxxxxx|file:xxxxxx|xxxxxx
-        if data.len() < 3 {
+        // |xxxxxxxx|xxxxxxxxx(data)|file:xxxxxx|xxxxxx
+        if data.len() < 4 {
             return None;
         }
-        let file_size = data[1].trim_start_matches("file:").parse::<u64>().unwrap();
-        let file_blake3 = data[2].to_string();
+        let file = data[1].as_bytes().to_vec();
+        let file_size = data[2].trim_start_matches("file:").parse::<u64>().unwrap();
+        let file_blake3 = data[3].to_string();
         Some(Self {
-            file: Vec::new(),
+            file,
             file_size,
             file_blake3,
         })
