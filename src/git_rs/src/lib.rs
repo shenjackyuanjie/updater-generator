@@ -1,5 +1,5 @@
 use gix_hash::{oid, ObjectId};
-use gix_object::{bstr::ByteSlice, tree::EntryMode, TreeRefIter};
+use gix_object::{bstr::ByteSlice, tree::EntryMode, TreeRef, TreeRefIter};
 use std::collections::HashMap;
 
 mod changes;
@@ -61,11 +61,27 @@ fn all_commits(db: &gix_odb::Handle) -> HashMap<String, ObjectId> {
     .collect()
 }
 
+pub fn diff_commits() {
+
+}
+
+use gix_odb::pack::Find;
+use gix_odb::pack::FindExt;
+
+pub fn tree_from_commit<'a>(db: &gix_odb::Handle, commit: &oid) -> TreeRef<'a> {
+    let mut buff = Vec::new();
+    let tree_id = db
+        .try_find(commit, &mut buff).unwrap()
+        .unwrap()
+        .0
+        .decode().unwrap().into_commit().unwrap().tree();
+    let tree = db.find_tree(&tree_id, &mut buff).unwrap().0;
+    tree
+}
+
 #[test]
 fn diff() {
     use gix_diff::tree::{Changes, Recorder};
-    use gix_odb::pack::Find;
-    use gix_odb::pack::FindExt;
     // 从仓库中读取两个树对象
     let mut buffer = Vec::new();
     let repo = gix_odb::at("../../tests/try_diff/.git/objects").unwrap();

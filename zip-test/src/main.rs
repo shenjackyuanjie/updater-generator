@@ -43,10 +43,6 @@ impl FileMetaData {
         data
     }
 
-    pub fn flake3(&self) -> String {
-        self.file_blake3.clone()
-    }
-
     /// 从给定数据中解析出 文件+文件大小+文件blake3
     pub fn from_data(data: &[u8]) -> Option<Self> {
         let string_data = String::from_utf8_lossy(data);
@@ -57,6 +53,7 @@ impl FileMetaData {
         let data = string_data.trim_end_matches("\n|by-shenjack");
         let mut data: Vec<&str> = data.rsplitn(3, "\n|").collect();
         data.reverse();
+
         // PE/ELFxxxxxxxxx(raw binary data)
         // |len:xxxxxx
         // |black3-base16384:xxx  (|by-shenjack)
